@@ -1,5 +1,7 @@
 package class
 
+const MAGIC = 0xCAFEBABE
+
 type File struct {
 	Magic        uint32
 	MinorVersion uint16
@@ -73,7 +75,7 @@ type ConstantLongInfo struct {
 	LowBytes  uint32
 }
 
-type ConstantDoublenfo struct {
+type ConstantDoubleInfo struct {
 	HighBytes uint32
 	LowBytes  uint32
 }
@@ -98,7 +100,7 @@ type ConstantMethodTypeInfo struct {
 
 type ConstantInvokeDynamicInfo struct {
 	BootstrapMethodAttrIndex uint16
-	NameAndTypeIndex         uint16t
+	NameAndTypeIndex         uint16
 }
 
 type FieldInfo struct {
