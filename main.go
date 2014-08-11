@@ -3,6 +3,7 @@ package main
 import "fmt"
 import "os"
 import "github.com/jameseb7/go-jvm/class"
+import "encoding/xml"
 
 func main(){
 	if len(os.Args) < 2 {
@@ -18,6 +19,11 @@ func main(){
 	if err != nil {
 		panic(err)
 	}
-	
-	fmt.Println(classFile)
+
+	str, err := xml.MarshalIndent(classFile, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(str))
 }

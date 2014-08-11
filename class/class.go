@@ -1,5 +1,7 @@
 package class
 
+import "fmt"
+
 const MAGIC = 0xCAFEBABE
 
 type File struct {
@@ -86,7 +88,7 @@ type ConstantNameAndTypeInfo struct {
 }
 
 type ConstantUtf8Info struct {
-	Bytes []byte
+	Bytes string
 }
 
 type ConstantMethodHandleInfo struct {
@@ -119,5 +121,27 @@ type MethodInfo struct {
 
 type AttributeInfo struct {
 	AttributeNameIndex uint16
-	Info               []byte
+	Info              []byte
 }
+
+func (t CPTag) String() string {
+	switch t {
+	case ClassTag: return "Class"
+	case FieldRefTag: return "FieldRef"
+	case MethodRefTag: return "MethodRef"
+	case InterfaceMethodRefTag: return "InterfaceMethodRef"
+	case StringTag: return "String"
+	case IntegerTag: return "Integer"
+	case FloatTag: return "Float"
+	case LongTag: return "Long"
+	case DoubleTag: return "Double"
+	case NameAndTypeTag: return "NameAndType"
+	case Utf8Tag: return "Utf8"
+	case MethodHandleTag: return "MethodHandle"
+	case MethodTypeTag: return "MethodType"
+	case InvokeDynamicTag: return "InvokeDynamic"
+	default: return fmt.Sprintf("%d", t)
+	}
+}
+
+		
