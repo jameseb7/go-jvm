@@ -5,7 +5,7 @@ import "os"
 import "github.com/jameseb7/go-jvm/class"
 import "encoding/xml"
 
-func main(){
+func main() {
 	if len(os.Args) < 2 {
 		return
 	}

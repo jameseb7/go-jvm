@@ -5,16 +5,15 @@ import "encoding/binary"
 import "errors"
 import "fmt"
 
-func ReadFile(r io.Reader) (file File, err error){
+func ReadFile(r io.Reader) (file File, err error) {
 	var count uint16
-	var longCount uint32
 	binary.Read(r, binary.BigEndian, &file.Magic)
 	if file.Magic != MAGIC {
 		err = errors.New(fmt.Sprint("Invalid class file magic number: ", file.Magic))
 		return
 	}
 	fmt.Printf("magic = %X \n", file.Magic)
-	
+
 	binary.Read(r, binary.BigEndian, &file.MinorVersion)
 	fmt.Println("minor_version = ", file.MinorVersion)
 	binary.Read(r, binary.BigEndian, &file.MajorVersion)
@@ -23,7 +22,7 @@ func ReadFile(r io.Reader) (file File, err error){
 	binary.Read(r, binary.BigEndian, &count)
 	fmt.Println("constant_pool_count = ", count)
 	file.ConstantPool = make([]CPInfo, count)
-	for i,_ := range file.ConstantPool  {
+	for i, _ := range file.ConstantPool {
 		if i == 0 {
 			continue
 		}
@@ -96,7 +95,7 @@ func ReadFile(r io.Reader) (file File, err error){
 			var info ConstantUtf8Info
 			binary.Read(r, binary.BigEndian, &count)
 			bytes := make([]byte, count)
-			for j,_ := range bytes {
+			for j, _ := range bytes {
 				binary.Read(r, binary.BigEndian, &bytes[j])
 			}
 			info.Bytes = string(bytes)
@@ -137,63 +136,52 @@ func ReadFile(r io.Reader) (file File, err error){
 	binary.Read(r, binary.BigEndian, &count)
 	fmt.Println("intefaces_count = ", count)
 	file.Interfaces = make([]uint16, count)
-	for i,_ := range file.Interfaces {
+	for i, _ := range file.Interfaces {
 		binary.Read(r, binary.BigEndian, &file.Interfaces[i])
-		fmt.Println("intefaces[", i,"] = ", file.Interfaces[i])
+		fmt.Println("intefaces[", i, "] = ", file.Interfaces[i])
 	}
 
 	binary.Read(r, binary.BigEndian, &count)
 	file.Fields = make([]FieldInfo, count)
-	for i,_ := range file.Fields {
+	for i, _ := range file.Fields {
 		binary.Read(r, binary.BigEndian, &file.Fields[i].AccessFlags)
 		binary.Read(r, binary.BigEndian, &file.Fields[i].NameIndex)
 		binary.Read(r, binary.BigEndian, &file.Fields[i].DescriptorIndex)
 		binary.Read(r, binary.BigEndian, &count)
 		file.Fields[i].Attributes = make([]AttributeInfo, count)
-		for j,_ := range file.Fields[i].Attributes {
-			binary.Read(r, binary.BigEndian, 
-				&file.Fields[i].Attributes[j].AttributeNameIndex)
-			binary.Read(r, binary.BigEndian, &longCount)
-			bytes := make([]byte, longCount)
-			for k,_ := range bytes {
-				binary.Read(r, binary.BigEndian, &bytes[k])
+		for j, _ := range file.Fields[i].Attributes {
+			file.Fields[i].Attributes[j], err = readAttribute(r, file.ConstantPool)
+			if err != nil {
+				return
 			}
-			file.Fields[i].Attributes[j].Info = bytes
 		}
 	}
 	fmt.Println("Fields read")
 
 	binary.Read(r, binary.BigEndian, &count)
 	file.Methods = make([]MethodInfo, count)
-	for i,_ := range file.Methods {
+	for i, _ := range file.Methods {
 		binary.Read(r, binary.BigEndian, &file.Methods[i].AccessFlags)
 		binary.Read(r, binary.BigEndian, &file.Methods[i].NameIndex)
 		binary.Read(r, binary.BigEndian, &file.Methods[i].DescriptorIndex)
 		binary.Read(r, binary.BigEndian, &count)
 		file.Methods[i].Attributes = make([]AttributeInfo, count)
-		for j,_ := range file.Methods[i].Attributes {
-			binary.Read(r, binary.BigEndian, 
-				&file.Methods[i].Attributes[j].AttributeNameIndex)
-			binary.Read(r, binary.BigEndian, &longCount)
-			bytes := make([]byte, longCount)
-			for k,_ := range bytes {
-				binary.Read(r, binary.BigEndian, &bytes[k])
+		for j, _ := range file.Methods[i].Attributes {
+			file.Methods[i].Attributes[j], err = readAttribute(r, file.ConstantPool)
+			if err != nil {
+				return
 			}
-			file.Methods[i].Attributes[j].Info = bytes
 		}
 	}
 
 	binary.Read(r, binary.BigEndian, &count)
 	file.Attributes = make([]AttributeInfo, count)
-	for i,_ := range file.Attributes {
-		binary.Read(r, binary.BigEndian, &file.Attributes[i].AttributeNameIndex)
-		binary.Read(r, binary.BigEndian, &longCount)
-		bytes := make([]byte, longCount)
-		for j,_ := range bytes {
-			binary.Read(r, binary.BigEndian, &bytes[j])
+	for i, _ := range file.Attributes {
+		file.Attributes[i], err = readAttribute(r, file.ConstantPool)
+		if err != nil {
+			return
 		}
-		file.Attributes[i].Info = bytes
 	}
-	
+
 	return
 }
