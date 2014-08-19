@@ -135,6 +135,40 @@ func readAttribute(r io.Reader, cp []CPInfo) (ai AttributeInfo, err error) {
 		return
 	}
 
+	if an == "Exceptions" {
+		info := ExceptionsAttribute{}
+		var numberOfExceptions uint16
+		binary.Read(r, binary.BigEndian, &numberOfExceptions)
+		info.ExceptionIndexTable = make([]uint16, numberOfExceptions)
+		binary.Read(r, binary.BigEndian, &info.ExceptionIndexTable)
+
+		ai.Info = info
+		return
+	}
+
+	if an == "BootstrapMethods" {
+		info := BootstrapMethodsAttribute{}
+		var numberOfMethods uint16
+		binary.Read(r, binary.BigEndian, &numberOfMethods)
+		info.BootstrapMethods = make([]struct {
+			BootstrapMethodRef uint16
+			BootstrapArguments []uint16
+		}, numberOfMethods)
+		for i, _ := range info.BootstrapMethods {
+			binary.Read(r, binary.BigEndian,
+				&info.BootstrapMethods[i].BootstrapMethodRef)
+			var numberOfArguments uint16
+			binary.Read(r, binary.BigEndian, &numberOfArguments)
+			info.BootstrapMethods[i].BootstrapArguments =
+				make([]uint16, numberOfArguments)
+			binary.Read(r, binary.BigEndian,
+				&info.BootstrapMethods[i].BootstrapArguments)
+		}
+
+		ai.Info = info
+		return
+	}
+
 	//default handling for an unrecognised attribute
 	info := make([]byte, size)
 	for i, _ := range info {
