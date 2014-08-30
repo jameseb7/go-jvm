@@ -65,21 +65,19 @@ type ConstantStringInfo struct {
 }
 
 type ConstantIntegerInfo struct {
-	Bytes uint16
+	Bytes int32
 }
 
 type ConstantFloatInfo struct {
-	Bytes uint16
+	Bytes float32
 }
 
 type ConstantLongInfo struct {
-	HighBytes uint32
-	LowBytes  uint32
+	Bytes int64
 }
 
 type ConstantDoubleInfo struct {
-	HighBytes uint32
-	LowBytes  uint32
+	Bytes float64
 }
 
 type ConstantNameAndTypeInfo struct {

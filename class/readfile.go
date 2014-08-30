@@ -22,10 +22,7 @@ func ReadFile(r io.Reader) (file File, err error) {
 	binary.Read(r, binary.BigEndian, &count)
 	fmt.Println("constant_pool_count = ", count)
 	file.ConstantPool = make([]CPInfo, count)
-	for i, _ := range file.ConstantPool {
-		if i == 0 {
-			continue
-		}
+	for i := 1; i < len(file.ConstantPool); i++ {
 		binary.Read(r, binary.BigEndian, &file.ConstantPool[i].Tag)
 		fmt.Println("constant_pool[", i, "].tag = ", file.ConstantPool[i].Tag)
 		switch file.ConstantPool[i].Tag {
@@ -72,18 +69,16 @@ func ReadFile(r io.Reader) (file File, err error) {
 			file.ConstantPool[i].Info = info
 		case LongTag:
 			var info ConstantLongInfo
-			binary.Read(r, binary.BigEndian, &info.HighBytes)
-			fmt.Println("constant_pool[", i, "].high_bytes = ", info.HighBytes)
-			binary.Read(r, binary.BigEndian, &info.LowBytes)
-			fmt.Println("constant_pool[", i, "].low_bytes = ", info.LowBytes)
+			binary.Read(r, binary.BigEndian, &info.Bytes)
+			fmt.Println("constant_pool[", i, "].bytes = ", info.Bytes)
 			file.ConstantPool[i].Info = info
+			i++
 		case DoubleTag:
 			var info ConstantDoubleInfo
-			binary.Read(r, binary.BigEndian, &info.HighBytes)
-			fmt.Println("constant_pool[", i, "].high_bytes = ", info.HighBytes)
-			binary.Read(r, binary.BigEndian, &info.LowBytes)
-			fmt.Println("constant_pool[", i, "].low_bytes = ", info.LowBytes)
+			binary.Read(r, binary.BigEndian, &info.Bytes)
+			fmt.Println("constant_pool[", i, "].bytes = ", info.Bytes)
 			file.ConstantPool[i].Info = info
+			i++
 		case NameAndTypeTag:
 			var info ConstantNameAndTypeInfo
 			binary.Read(r, binary.BigEndian, &info.NameIndex)
