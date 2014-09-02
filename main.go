@@ -64,6 +64,21 @@ func loadClass(name string, loader string) (err error) {
 	}
 
 	classFile, err := class.ReadFile(file)
+	if err != nil {
+		return
+	}
+
+	if  classFile.ConstantPool[classFile.ConstantPool[classFile.ThisClass].Info.(ConstantClassInfo).NameIndex].Info.(ConstantUtf8Info).Bytes != name {
+		err = errors.New("NoClassDefFoundError")
+		return
+	}
+
+	if (classFile.MajorVersion > 52) || 
+		((classFile.MajorVersion == 52) && (classFile.MinorVersion > 0)) {
+		err = errors.New("UnsupportedClassVersionError")
+		return
+	}
+		
 
 	classes[classNamePair{name, loader}] = classDefPair{loader, &classFile}
 
