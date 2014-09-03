@@ -18,6 +18,41 @@ type File struct {
 	Attributes   []AttributeInfo
 }
 
+func (cf File) Name() string {
+	thisIndex := cf.ThisClass
+	classInfo, ok := cf.ConstantPool[thisIndex].Info.(ConstantClassInfo)
+	if !ok {
+		return ""
+	}
+
+	name, ok := cf.ConstantPool[classInfo.NameIndex].Info.(ConstantUtf8Info)
+	if !ok {
+		return ""
+	}
+	
+	return name.Bytes
+}
+
+func (cf File) SuperClassName() string {
+	superIndex := cf.SuperClass
+
+	if superIndex == 0 {
+		return ""
+	}
+
+	classInfo, ok := cf.ConstantPool[superIndex].Info.(ConstantClassInfo)
+	if !ok {
+		return ""
+	}
+
+	name, ok := cf.ConstantPool[classInfo.NameIndex].Info.(ConstantUtf8Info)
+	if !ok {
+		return ""
+	}
+	
+	return name.Bytes
+}
+
 type CPTag uint8
 
 const NullTag CPTag = 0

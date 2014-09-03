@@ -16,6 +16,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("")
+	fmt.Println(classes[classNamePair{os.Args[1], ""}].classDef.Name())
+	fmt.Println(classes[classNamePair{os.Args[1], ""}].classDef.SuperClassName())
 }
 
 type classNamePair struct{
@@ -68,7 +72,7 @@ func loadClass(name string, loader string) (err error) {
 		return
 	}
 
-	if  classFile.ConstantPool[classFile.ConstantPool[classFile.ThisClass].Info.(ConstantClassInfo).NameIndex].Info.(ConstantUtf8Info).Bytes != name {
+	if  classFile.Name() != name {
 		err = errors.New("NoClassDefFoundError")
 		return
 	}
