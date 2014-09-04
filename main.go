@@ -12,14 +12,21 @@ func main() {
 		return
 	}
 
-	err := loadClass(os.Args[1], "")
+	err := loadClass(os.Args[1], "", nil)
 	if err != nil {
 		panic(err)
 	}
 
+	class := classes[classNamePair{os.Args[1], ""}].classDef
+	super := classes[classNamePair{class.SuperClassName(), ""}].classDef
+
 	fmt.Println("")
-	fmt.Println(classes[classNamePair{os.Args[1], ""}].classDef.Name())
-	fmt.Println(classes[classNamePair{os.Args[1], ""}].classDef.SuperClassName())
+	fmt.Println(class.Name())
+	fmt.Println(class.SuperClassName())
+
+	fmt.Println("")
+	fmt.Println(super.Name())
+	fmt.Println(super.SuperClassName())
 }
 
 type classNamePair struct{
@@ -34,7 +41,14 @@ type classDefPair struct{
 
 var classes = make(map[classNamePair]classDefPair, 100)
 
-func loadClass(name string, loader string) (err error) {
+func loadClass(name string, loader string, chain []string) (err error) {
+	for _, v := range chain {
+		if name == v {
+			err = errors.New("ClassCircularityError")
+			return
+		}
+	}
+	
 	if loader != "" {
 		panic(errors.New("User-defined loaders are not yet supported"))
 	}
@@ -73,7 +87,7 @@ func loadClass(name string, loader string) (err error) {
 	}
 
 	if  classFile.Name() != name {
-		err = errors.New("NoClassDefFoundError")
+		err = errors.New(fmt.Sprintf("NoClassDefFoundError: %v", name))
 		return
 	}
 
@@ -82,7 +96,24 @@ func loadClass(name string, loader string) (err error) {
 		err = errors.New("UnsupportedClassVersionError")
 		return
 	}
-		
+	
+	//load superclasses
+	if classFile.SuperClass != 0 {
+		if chain == nil {
+			chain = make([]string, 5)
+		}
+		superclass := classFile.SuperClassName()
+		loadClass(superclass, loader, append(chain, name))
+		if classes[classNamePair{superclass, loader}].classDef.IsInterface() {
+			err = errors.New("IncompatibleClassChangeError")
+			return
+		}
+	} else {
+		if classFile.Name() != "java/lang/Object" {
+			err = errors.New("Only Object may have no superclass")
+			return
+		}
+	}
 
 	classes[classNamePair{name, loader}] = classDefPair{loader, &classFile}
 
